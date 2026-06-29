@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>پنل مدیریت هوشمند سرمایش</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;950&display=swap');
+        
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-purple: #c084fc;
+            --accent-orange: #fb923c;
+        }
+
+        body {
+            font-family: 'Vazirmatn', system-ui, -apple-system, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0 0 100px 0;
+            display: flex;
+            flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+   
+        .container {
+            max-width: 450px;
+            width: 90%;
+            margin: 25px auto;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 10px 0;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 950;
+            letter-spacing: -0.5px;
+            margin: 0;
+            background: linear-gradient(to left, #fff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* صفحه اصلی: ویجت دایره‌ای دما */
+        .temp-gauge-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .temp-gauge-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+            border: 6px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .temp-gauge-glow {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            border-radius: 50%;
+            border: 4px dashed rgba(56, 189, 248, 0.2);
+            animation: rotateGlow 40s linear infinite;
+        }
+
+        @keyframes rotateGlow {
+            100% { transform: rotate(360deg); }
+        }
+
+        .temp-display {
+            z-index: 2;
+            text-align: center;
+        }
+
+        .temp-value {
+            font-size: 54px;
+            font-weight: 950;
+            line-height: 1;
+            background: linear-gradient(180deg, #ffffff 30%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-family: 'Vazirmatn', sans-serif;
+        }
+
+        .temp-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-top: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        /* کارت‌های گرید داشبورد */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .status-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 16px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            min-height: 75px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .status-card:active {
+            transform: scale(0.98);
+        }
+
+        .card-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* نشانگرهای وضعیت نئون پالس */
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .pulse-dot.green { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); animation: pulseG 2s infinite; }
+        .pulse-dot.red { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); animation: pulseR 2s infinite; }
+        .pulse-dot.blue { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); animation: pulseB 2s infinite; }
+        .pulse-dot.gray { background: var(--text-secondary); box-shadow: none; }
+
+        @keyframes pulseG { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; transform: scale(1.1); } }
+        @keyframes pulseR { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; transform: scale(1.1); } }
+        @keyframes pulseB { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; transform: scale(1.1); } }
+
+        /* بخش کنترلر ریموت */
+        .remote-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .btn-power {
+            padding: 18px;
+            font-size: 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: white;
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-power.on {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-power:active {
+            transform: scale(0.97);
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        /* دکمه‌های شکیل تنظیم دما */
+        .temp-adjuster {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 20px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .btn-circle {
+            width: 54px;
+            height: 54px;
+            font-size: 24px;
+            border-radius: 16px;
+            border: none;
+            background: #1e293b;
+            color: var(--accent-blue);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn-circle:active {
+            background: #334155;
+            transform: scale(0.92);
+        }
+
+        /* شخصی‌سازی پیشرفته المان‌های انتخابگر */
+        select, input {
+            width: 100%;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            outline: none;
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            box-sizing: border-box;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: "▼";
+            font-size: 10px;
+            color: var(--text-secondary);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .btn-action {
+            color: #0f172a;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+            width: 100%;
+            margin-top: 10px;
+            background: var(--accent-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-action:active {
+            transform: scale(0.97);
+        }
+
+        /* جدول‌ها و آرشیو */
+        .table-wrapper {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            background: rgba(15, 23, 42, 0.4);
+            margin-top: 15px;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .log-table th, .log-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .log-table th {
+            background-color: #1e293b;
+            color: var(--text-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* منوی ناوبری شیشه‌ای پایین صفحه (Glassmorphism Bottom Navbar) */
+        .navbar {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            right: 15px;
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-btn {
+            flex: 1;
+            padding: 10px 2px;
+            background: transparent;
+            border: none;
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            border-radius: 16px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .nav-btn.active {
+            color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.1);
+            font-weight: 700;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            transition: transform 0.2s;
+        }
+
+        .nav-btn.active .nav-icon {
+            transform: translateY(-2px);
+        }
+        
+        /* مدیریت صفحات */
+        .page {
+            display: none;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* توست نوتیفیکیشن */
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #38bdf8;
+            color: #0f172a;
+            text-align: center;
+            border-radius: 16px;
+            padding: 16px;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            bottom: 110px;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.3);
+        }
+
+        .toast.show {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- تبر سربرگ ثابت -->
+    <div class="container" style="margin-bottom: 0;">
+        <header>
+            <h1><span>❄️</span> مدیریت سیستم سرمایش هوشمند</h1>
+        </header>
+    </div>
+
+    <!-- صفحه اول: داشبورد اصلی وضعیت -->
+    <div id="page-home" class="container page active">
+        <div class="temp-gauge-container">
+            <div class="temp-gauge-bg"></div>
+            <div class="temp-gauge-glow"></div>
+            <div class="temp-display">
+                <div id="temp" class="temp-value">--</div>
+                <div class="temp-label">دمای فعلی محیط</div>
+            </div>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <span class="card-title">سامانه هوشمند</span>
+                <span class="card-value">
+                    <span id="home_smart_status_text">--</span>
+                    <span id="home_smart_dot" class="pulse-dot gray"></span>
+                </span>
+            </div>
+            <div class="status-card">
+                <span class="card-title">وضعیت کولر گازی</span>
+                <span class="card-value">
+                    <span id="home_ac_status_text">--</span>
+                    <span id="home_ac_dot" class="pulse-dot gray"></span>
+                </span>
+            </div>
+            <div class="status-card">
+                <span class="card-title">ساعت سیستم</span>
+                <span id="time" class="card-value" style="color: var(--accent-purple);">--:--</span>
+            </div>
+            <div class="status-card">
+                <span class="card-title">تاریخ سیستم</span>
+                <span id="sys_date" class="card-value" style="color: var(--accent-orange);">--/--/--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحه دوم: ریموت کنترل دیجیتال -->
+    <div id="page-remote" class="container page">
+        <div class="remote-card">
+            <button id="power_btn" class="btn-power" onclick="togglePower()"><span>⚡</span> اتصال به برد...</button>
+            
+            <div class="control-group">
+                <label>تنظیم دمای هدف کولر</label>
+                <div class="temp-adjuster">
+                    <button class="btn-circle" onclick="changeTemp(-1)">-</button>
+                    <span id="ac_temp_val" style="font-size:38px; font-weight:950; color: #fff; width: 60px; text-align: center;">24</span>
+                    <button class="btn-circle" onclick="changeTemp(1)">+</button>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>حالت کارکرد (Mode)</label>
+                <div class="select-wrapper">
+                    <select id="ac_mode" onchange="updateAC()">
+                        <option value="3">❄️ سرمایش (Cool)</option>
+                        <option value="2">💧 رطوبت‌زدایی (Dry)</option>
+                        <option value="6">💨 فن (Fan)</option>
+                        <option value="4">☀️ گرمایش (Heat)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>سرعت دور فن</label>
+                <div class="select-wrapper">
+                    <select id="ac_fan" onchange="updateAC()">
+                        <option value="0">⚙️ اتوماتیک</option>
+                        <option value="3">🐢 کم</option>
+                        <option value="2">🚶 متوسط</option>
+                        <option value="1">🚀 زیاد</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحه سوم: تنظیمات زمان‌بندی روزانه -->
+    <div id="page-schedule" class="container page">
+        <div class="remote-card">
+            <div class="control-group">
+                <label>انتخاب ساعت فرمان</label>
+                <input type="time" id="timer_time" style="margin-bottom:14px; text-align:center; letter-spacing: 2px;">
+                
+                <label>عملیات اجرایی</label>
+                <div class="select-wrapper" style="margin-bottom:14px;">
+                    <select id="timer_action">
+                        <option value="1">🟢 روشن شدن (Cool - 25°C - کم)</option>
+                        <option value="0">🔴 خاموش شدن کامل</option>
+                    </select>
+                </div>
+                
+                <button class="btn-action" style="background: var(--accent-purple); color: #0f172a;" onclick="addTimer()"><span>➕</span> ثبت فرمان زمان‌بندی</button>
+            </div>
+      
+            <div class="table-wrapper">
+                <table class="log-table">
+                    <thead><tr><th>ساعت</th><th>فرمان اجرایی</th><th>حذف</th></tr></thead>
+                    <tbody id="timer-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحه چهارم: ترموستات هوشمند و ایمنی -->
+    <div id="page-smart" class="container page">
+        <div class="remote-card">
+            <div class="status-card" style="width:100%; margin-bottom:18px; box-sizing:border-box; background: rgba(56,189,248,0.06); border-color: rgba(56,189,248,0.2);">
+                <span class="card-title" style="color: var(--accent-blue);">⏳ زمان باقیمانده قفل کمپرسور:</span>
+                <span id="lock_timer" class="card-value" style="color: #fff; font-size: 18px;">-- دقیقه</span>
+            </div>
+
+            <div class="control-group">
+                <label>وضعیت سامانه هوشمند</label>
+                <div class="select-wrapper">
+                    <select id="smart_on_off">
+                        <option value="0">❌ غیرفعال کردن هوشمند</option>
+                        <option value="1">✅ فعال‌سازی خودکار (ترموستات)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label>حد بالای دما (فرمان روشن شدن کولر):</label>
+                <input type="number" id="smart_high" step="0.1" value="30.0" dir="ltr">
+            </div>
+            
+            <div class="control-group">
+                <label>حد پایین دما (فرمان خاموش شدن کولر):</label>
+                <input type="number" id="smart_low" step="0.1" value="23.0" dir="ltr">
+            </div>
+            
+            <div class="control-group">
+                <label>تایمر محافظت کمپرسور (حداقل ۶۰ دقیقه):</label>
+                <input type="number" id="smart_timeout" min="60" value="60" dir="ltr">
+            </div>
+            
+            <button class="btn-action" onclick="saveSmart()"><span>💾</span> ذخیره تنظیمات ترموستات</button>
+            <button class="btn-action" style="background:var(--accent-orange); color:#0f172a; margin-top:12px;" onclick="resetLock()"><span>🔓</span> بازنشانی دستی قفل کمپرسور</button>
+
+            <div class="control-group" style="background: rgba(251,146,60,0.05); border: 1px solid rgba(251,146,60,0.15); border-radius: 20px; padding: 15px; margin-top: 20px;">
+                <label style="color:var(--accent-orange); text-align: center; margin-bottom:12px;">همگام‌سازی فیزیکی (بدون ارسال سیگنال):</label>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-action" style="background:var(--accent-green); margin:0;" onclick="syncAC(1)">روشن است</button>
+                    <button class="btn-action" style="background:var(--accent-red); color:#fff; margin:0;" onclick="syncAC(0)">خاموش است</button>
+                </div>
+            </div>
+
+            <button class="btn-action" style="background: transparent; border: 1px solid var(--accent-blue); color: var(--accent-blue); margin-top:20px;" id="download_events_btn"><span>📥</span> دانلود تاریخچه وقایع دستگاه (CSV)</button>
+        </div>
+    </div>
+
+    <!-- صفحه پنجم: آرشیو دما و خروجی اکسل -->
+    <div id="page-report" class="container page">
+        <div class="remote-card">
+            <button class="btn-action" style="background:var(--accent-green); color:#0f172a; margin-bottom:15px;" id="download_week_btn"><span>📥</span> دانلود فایل خروجی اکسل (۷ روزه)</button>
+            <div class="table-wrapper">
+                <table class="log-table">
+                    <thead><tr><th>تاریخ و زمان نمونه‌برداری</th><th>دما (°C)</th></tr></thead>
+                    <tbody id="log-list"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- منوی فوتِـر ناوبری ثابت کاملاً واکنش‌گرا -->
+    <div class="navbar">
+        <button id="btn-tab-home" class="nav-btn active" onclick="switchPage('home')"><span class="nav-icon">🏠</span><span>خانه</span></button>
+        <button id="btn-tab-remote" class="nav-btn" onclick="switchPage('remote')"><span class="nav-icon">🎛️</span><span>کنترل</span></button>
+        <button id="btn-tab-schedule" class="nav-btn" onclick="switchPage('schedule')"><span class="nav-icon">🕒</span><span>زمان‌بندی</span></button>
+        <button id="btn-tab-smart" class="nav-btn" onclick="switchPage('smart')"><span class="nav-icon">🧠</span><span>هوشمند</span></button>
+        <button id="btn-tab-report" class="nav-btn" onclick="switchPage('report')"><span class="nav-icon">📊</span><span>آرشیو</span></button>
+    </div>
+
+    <script>
+        // جهت استفاده آفلاین / محلی، مقدار خالی بهترین حالت است.
+        const BASE_URL = ""; 
+
+        document.getElementById('download_events_btn').onclick = function() { window.location.href = BASE_URL + '/api/download-events'; };
+        document.getElementById('download_week_btn').onclick = function() { window.location.href = BASE_URL + '/api/download-week'; };
+
+        function showToast(msg) {
+            let t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500); 
+        }
+
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('page-' + pageName).classList.add('active');
+            document.getElementById('btn-tab-' + pageName).classList.add('active');
+            if(pageName === 'report') loadReportList();
+            if(pageName === 'schedule') loadTimers();
+            if(pageName === 'smart') loadSmartConfig();
+        }
+
+        function handleControlResponse(response) {
+            response.json().then(data => {
+                if(data.smart_disabled_now) {
+                    showToast("⚠️ تغییر وضعیت دستی؛ سامانه هوشمند موقتاً غیرفعال شد.");
+                    loadSmartConfig(); 
+                }
+                loadStatus();
+            });
+        }
+
+        function loadStatus() {
+            fetch(BASE_URL + '/api/status').then(res => res.json()).then(data => {
+                document.getElementById('temp').innerText = data.current_temp.toFixed(1) + "°";
+                document.getElementById('sys_date').innerText = data.date;
+                document.getElementById('time').innerText = data.time.substring(0, 5); // فرمت hh:mm
+                document.getElementById('ac_temp_val').innerText = data.ac_temp;
+                document.getElementById('ac_mode').value = data.ac_mode;
+                document.getElementById('ac_fan').value = data.ac_fan;
+                
+                document.getElementById('lock_timer').innerText = data.smart_active ? (data.lock_remaining + " دقیقه") : "بدون قفل (آماده کار)";
+
+                let pBtn = document.getElementById('power_btn');
+                let hAcText = document.getElementById('home_ac_status_text');
+                let hAcDot = document.getElementById('home_ac_dot');
+                
+                if(data.ac_power) { 
+                    pBtn.innerHTML = "<span>⚡</span> کولر روشن است (کلیک برای خاموشی)";
+                    pBtn.className = "btn-power on"; 
+                    hAcText.innerText = "روشن";
+                    hAcDot.className = "pulse-dot green";
+                } else { 
+                    pBtn.innerHTML = "<span>💤</span> کولر خاموش است (کلیک برای روشن کردن)";
+                    pBtn.className = "btn-power"; 
+                    hAcText.innerText = "خاموش";
+                    hAcDot.className = "pulse-dot red";
+                }
+
+                let hSmText = document.getElementById('home_smart_status_text');
+                let hSmDot = document.getElementById('home_smart_dot');
+                if(data.smart_active) { 
+                    hSmText.innerText = "فعال";
+                    hSmDot.className = "pulse-dot blue";
+                } else { 
+                    hSmText.innerText = "غیرفعال";
+                    hSmDot.className = "pulse-dot gray";
+                }
+            }).catch(err => console.log("عدم ارتباط با ESP32:", err));
+        }
+
+        function loadSmartConfig() {
+            fetch(BASE_URL + '/api/smart/get').then(res => res.json()).then(data => {
+                document.getElementById('smart_on_off').value = data.active ? "1" : "0";
+                document.getElementById('smart_high').value = data.high;
+                document.getElementById('smart_low').value = data.low;
+                document.getElementById('smart_timeout').value = data.timeout;
+            });
+        }
+
+        function saveSmart() {
+            let act = document.getElementById('smart_on_off').value;
+            let high = document.getElementById('smart_high').value;
+            let low = document.getElementById('smart_low').value;
+            let tout = parseInt(document.getElementById('smart_timeout').value);
+            if (tout < 60) { showToast("❌ زمان قفل نمی‌تواند کمتر از ۶۰ دقیقه باشد."); return; }
+            fetch(BASE_URL + `/api/smart/save?active=${act}&high=${high}&low=${low}&timeout=${tout}`).then(() => { showToast("💾 تنظیمات هوشمند ترموستات ذخیره شد"); loadStatus(); });
+        }
+
+        function resetLock() { fetch(BASE_URL + '/api/smart/reset-lock').then(() => showToast("🔓 قفل کمپرسور با موفقیت بازنشانی شد")); loadStatus(); }
+        function syncAC(state) { fetch(BASE_URL + `/api/smart/sync?power=${state}`).then(() => { showToast("🔄 وضعیت کولر با موفقیت همگام شد"); loadStatus(); }); }
+        
+        function loadTimers() {
+            fetch(BASE_URL + '/api/timers').then(res => res.json()).then(list => {
+                let html = "";
+                list.forEach(t => {
+                    let actText = t.action === 1 ? "<span style='color:var(--accent-green);'>🟢 روشن شدن</span>" : "<span style='color:var(--accent-red);'>🔴 خاموش شدن</span>";
+                    let timeText = String(t.hour).padStart(2,'0') + ":" + String(t.minute).padStart(2,'0');
+                    html += `<tr><td style="font-size:15px; font-weight:700;" dir="ltr">${timeText}</td><td>${actText}</td><td><button style="background:none; border:none; color:var(--accent-red); cursor:pointer; font-size:16px;" onclick="delTimer(${t.id})">🗑️</button></td></tr>`;
+                });
+                document.getElementById('timer-list').innerHTML = html || "<tr><td colspan='3' style='color:var(--text-secondary); padding: 20px 0;'>تایمری تعریف نشده است</td></tr>";
+            });
+        }
+        
+        function addTimer() {
+            let t = document.getElementById('timer_time').value;
+            let a = document.getElementById('timer_action').value;
+            if(!t) { showToast("❌ لطفاً ساعت را انتخاب کنید"); return; }
+            let [h, m] = t.split(':');
+            fetch(BASE_URL + `/api/timers/add?h=${h}&m=${m}&act=${a}`).then(() => { showToast("✅ تایمر با موفقیت اضافه شد"); loadTimers(); document.getElementById('timer_time').value = ""; });
+        }
+        
+        function delTimer(id) { fetch(BASE_URL + `/api/timers/del?id=${id}`).then(() => { showToast("🗑️ تایمر حذف شد"); loadTimers(); }); }
+        
+        function togglePower() { fetch(BASE_URL + '/api/control?action=toggle').then(handleControlResponse); }
+        function changeTemp(val) {
+            let cur = parseInt(document.getElementById('ac_temp_val').innerText);
+            let target = cur + val;
+            if(target >= 16 && target <= 30) {
+                document.getElementById('ac_temp_val').innerText = target;
+                fetch(BASE_URL + '/api/control?temp=' + target).then(handleControlResponse);
+            }
+        }
+        function updateAC() {
+            let mode = document.getElementById('ac_mode').value;
+            let fan = document.getElementById('ac_fan').value;
+            fetch(BASE_URL + `/api/control?mode=${mode}&fan=${fan}`).then(handleControlResponse);
+        }
+        
+        function loadReportList() {
+            fetch(BASE_URL + '/api/report-list').then(res => res.json()).then(list => {
+                let html = ""; 
+                list.reverse().forEach(row => { 
+                    html += `<tr><td dir="ltr" style="color:var(--text-secondary);">${row.dt}</td><td style="font-size:15px; color:var(--accent-red); font-weight:700;" dir="ltr">${row.v.toFixed(1)} °C</td></tr>`; 
+                });
+                document.getElementById('log-list').innerHTML = html || "<tr><td colspan='2' style='color:var(--text-secondary); padding: 20px 0;'>داده‌ای ثبت نشده است</td></tr>";
+            });
+        }
+        
+        setInterval(loadStatus, 3000);
+        window.onload = loadStatus;
+    </script>
+</body>
+</html>
